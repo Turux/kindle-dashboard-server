@@ -4,35 +4,38 @@ import requests
 from datetime import datetime, timezone
 
 def fetch_f1():
-    # get remaining sessions this year
-    now = datetime.now(timezone.utc).isoformat()
-    url = (
-        f"https://api.openf1.org/v1/sessions"
-        f"?date_start>={now[:10]}"
-        f"&session_type!=Race"  
+    r = requests.get(
+        "https://api.openf1.org/v1/sessions?year=2026",
+        timeout=10
     )
-    r = requests.get(url, timeout=10)
     r.raise_for_status()
     sessions = r.json()
 
     if not sessions:
         return {"label": "No upcoming sessions", "name": "---", "date": "---"}
 
-    # sort by date, take the next one
-    sessions.sort(key=lambda s: s["date_start"])
-    next_session = sessions[0]
+    # filter to future sessions, ignore cancelled ones
+    now    = datetime.now(timezone.utc).isoformat()
+    future = [
+        s for s in sessions
+        if s.get("date_start", "") >= now
+        and not s.get("is_cancelled", False)
+    ]
 
-    name     = next_session.get("session_name", "---")
-    location = next_session.get("location", "")
-    dt_str   = next_session.get("date_start", "")
+    if not future:
+        return {"label": "Season complete", "name": "---", "date": "---"}
 
-    # format date
+    future.sort(key=lambda s: s["date_start"])
+    s = future[0]
+
+    location = s.get("location", "")
+    name     = s.get("session_name", "---")
+
     try:
-        dt    = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
-        # convert to UK time (BST = UTC+1 in summer)
+        dt    = datetime.fromisoformat(s["date_start"])
         label = dt.strftime("%-d %b %H:%M")
     except:
-        label = dt_str[:10]
+        label = s["date_start"][:10]
 
     return {
         "label": "Next Session",
