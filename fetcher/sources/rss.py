@@ -4,6 +4,7 @@ import feedparser
 import trafilatura
 import hashlib
 import os
+import unicodedata
 from datetime import datetime, timezone
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR, SOURCE_DISPLAY_NAMES
@@ -23,6 +24,29 @@ def _parse_date(entry):
                 pass
     return ""
 
+def _clean_text(text):
+    """Normalise unicode to ASCII-safe characters"""
+    if not text:
+        return text
+    # replace common unicode punctuation with ASCII equivalents
+    replacements = {
+        "\u2018": "'",   # left single quote
+        "\u2019": "'",   # right single quote
+        "\u201c": '"',   # left double quote
+        "\u201d": '"',   # right double quote
+        "\u2013": "-",   # en dash
+        "\u2014": "--",  # em dash
+        "\u2026": "...", # ellipsis
+        "\u00a0": " ",   # non-breaking space
+    }
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
+
+    # for anything else, decompose and drop non-ASCII
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
+    return text
+
 def _fetch_article(url):
     """Fetch and clean article text using trafilatura"""
     try:
@@ -35,6 +59,8 @@ def _fetch_article(url):
             include_tables=False,
             no_fallback=False,
         )
+        if text:
+            text = _clean_text(text)
         return text
     except Exception as e:
         print(f"    article fetch failed for {url}: {e}")
@@ -87,10 +113,10 @@ def fetch_all_rss():
                             f.write(text)
 
                 items.append({
-                    "title":    title,
+                    "title":    _clean_text(title),
                     "source":   SOURCE_DISPLAY_NAMES.get(source_id, source_id),  # ← this line
                     "date":     date,
-                    "summary":  summary,
+                    "summary":  _clean_text(summary),
                     "url":      link,
                     "url_hash": url_hash,
                 })
