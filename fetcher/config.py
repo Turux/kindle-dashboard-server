@@ -18,7 +18,7 @@ RSS_SOURCES = {
     "bellingcat": "https://www.bellingcat.com/feed/",
     "the_nerve": "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
     "the_dial":  "https://thedialrss.com/combined-rss/",
-    "ft":        None,   # placeholder — TBD
+    "ft":         "https://feeds.acast.com/public/shows/ftnewsbriefing",
 }
 
 # ── headlines for home screen ─────────────────────
@@ -27,6 +27,15 @@ HOME_HEADLINE_SOURCES = {
     "guardian":  2,
     "semafor":   1,
     "the_nerve": 1,
+}
+
+SOURCE_DISPLAY_NAMES = {
+    "guardian":   "Guardian",
+    "semafor":    "Semafor",
+    "bellingcat": "Bellingcat",
+    "the_nerve":  "The Nerve",
+    "the_dial":   "The Dial",
+    "ft": "FT Briefing",
 }
 
 # ── paths ─────────────────────────────────────────
