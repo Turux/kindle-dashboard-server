@@ -17,6 +17,17 @@ def ensure_dirs():
     os.makedirs(SOURCES_DIR,  exist_ok=True)
     os.makedirs(ARTICLES_DIR, exist_ok=True)
 
+def cleanup_articles():
+    """Keep server article cache bounded"""
+    import glob
+    files = sorted(
+        glob.glob(f"{ARTICLES_DIR}/*.txt"),
+        key=os.path.getmtime,
+        reverse=True
+    )
+    for f in files[50:]:   # keep 50 on server
+        os.remove(f)
+
 def run_fetch():
     print("Fetching all data...")
     ensure_dirs()
@@ -68,6 +79,9 @@ def run_fetch():
     home_path = f"{DATA_DIR}/home.json"
     with open(home_path, "w") as f:
         json.dump(data, f)
+
+    # clean after yourself
+    cleanup_articles()
 
     print(f"Fetch complete.")
 
