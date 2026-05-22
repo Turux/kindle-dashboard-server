@@ -1,0 +1,35 @@
+services:
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - fetcher
+
+  fetcher:
+    build: ./fetcher
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./fetcher/config.py:/app/config.py
+    environment:
+      - FETCH_INTERVAL=1800   # 30 minutes in seconds
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
