@@ -14,7 +14,7 @@ STOCK_TICKERS = [
 # ── rss sources ───────────────────────────────────
 RSS_SOURCES = {
     "guardian":  "https://www.theguardian.com/uk/rss",
-    "semafor":   "https://www.semafor.com/feed",
+    "semafor": "https://www.semafor.com/rss.xml",
     "bellingcat": "https://www.bellingcat.com/feed/",
     "the_nerve": "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
     "the_dial":  "https://thedialrss.com/combined-rss/",
