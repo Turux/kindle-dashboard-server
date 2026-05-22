@@ -5,6 +5,7 @@ import trafilatura
 import hashlib
 import os
 import unicodedata
+import re
 from datetime import datetime, timezone
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR, SOURCE_DISPLAY_NAMES
@@ -25,24 +26,29 @@ def _parse_date(entry):
     return ""
 
 def _clean_text(text):
-    """Normalise unicode to ASCII-safe characters"""
     if not text:
         return text
-    # replace common unicode punctuation with ASCII equivalents
+    
+    # strip markdown links [text](url) → text
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    
+    # strip bare URLs
+    text = re.sub(r'https?://\S+', '', text)
+    
+    # existing replacements
     replacements = {
-        "\u2018": "'",   # left single quote
-        "\u2019": "'",   # right single quote
-        "\u201c": '"',   # left double quote
-        "\u201d": '"',   # right double quote
-        "\u2013": "-",   # en dash
-        "\u2014": "--",  # em dash
-        "\u2026": "...", # ellipsis
-        "\u00a0": " ",   # non-breaking space
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2013": "-",
+        "\u2014": "--",
+        "\u2026": "...",
+        "\u00a0": " ",
     }
     for char, replacement in replacements.items():
         text = text.replace(char, replacement)
 
-    # for anything else, decompose and drop non-ASCII
     text = unicodedata.normalize("NFKD", text)
     text = text.encode("ascii", "ignore").decode("ascii")
     return text
