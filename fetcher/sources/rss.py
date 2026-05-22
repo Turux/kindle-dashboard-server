@@ -8,9 +8,6 @@ from datetime import datetime, timezone
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR, SOURCE_DISPLAY_NAMES
 
-# when building items:
-"source": SOURCE_DISPLAY_NAMES.get(source_id, source_id),
-
 def _url_hash(url):
     return hashlib.md5(url.encode()).hexdigest()[:10]
 
