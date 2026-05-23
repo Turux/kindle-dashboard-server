@@ -12,8 +12,9 @@ def fetch_f1():
 
         if r.status_code == 401:
             return {
-                "label": "Session live!",
-                "name":  "F1 on now",
+                "label": "Live now",
+                "event": "F1",
+                "name":  "Session live!",
                 "date":  "Check TV",
             }
 
@@ -21,17 +22,20 @@ def fetch_f1():
         sessions = r.json()
 
         if not sessions:
-            return {"label": "No sessions", "name": "---", "date": "---"}
+            return {"label": "No sessions", "event": "---",
+                    "name": "---", "date": "---"}
 
-        today  = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        # compare full datetime not just date
+        now    = datetime.now(timezone.utc).isoformat()
         future = [
             s for s in sessions
-            if s.get("date_start", "")[:10] >= today
+            if s.get("date_end", "") > now   # use date_end!
             and not s.get("is_cancelled", False)
         ]
 
         if not future:
-            return {"label": "Season complete", "name": "---", "date": "---"}
+            return {"label": "Season complete", "event": "---",
+                    "name": "---", "date": "---"}
 
         future.sort(key=lambda s: s["date_start"])
         s = future[0]
@@ -47,10 +51,12 @@ def fetch_f1():
 
         return {
             "label": "Next Session",
-            "name":  f"{location} {name}",
+            "event": f"{location} GP",
+            "name":  name,
             "date":  label,
         }
 
     except Exception as e:
         print(f"  f1 failed: {e}")
-        return {"label": "Unavailable", "name": "---", "date": "---"}
+        return {"label": "Unavailable", "event": "---",
+                "name": "---", "date": "---"}
