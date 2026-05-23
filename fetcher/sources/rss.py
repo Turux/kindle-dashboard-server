@@ -31,6 +31,11 @@ def _clean_text(text):
     
     # strip markdown links [text](url) → text
     text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+
+    # strip common paywall prompts
+    text = re.sub(r'\[Upgrade to.*?\]', '', text)
+    text = re.sub(r'\[Subscribe.*?\]', '', text)
+    text = re.sub(r'Upgrade to membership.*', '', text, flags=re.IGNORECASE)
     
     # strip bare URLs
     text = re.sub(r'https?://\S+', '', text)
