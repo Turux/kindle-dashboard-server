@@ -1,7 +1,7 @@
 # fetcher/sources/sailgp.py
 
 import requests
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from icalendar import Calendar
 
 ICS_URL = (
@@ -48,13 +48,21 @@ def fetch_sailgp():
         else:
             event_date = dtstart
 
-        if event_date < today:
+        dtend = component.get("DTEND").dt
+        if isinstance(dtend, datetime):
+            end_date = dtend.date()
+        else:
+            end_date = dtend
+
+        # include events that haven't fully ended yet
+        if end_date < today:
             continue
 
         summary = str(component.get("SUMMARY", ""))
         events.append({
-            "date":    event_date,
-            "summary": summary,
+            "date":     event_date,
+            "end_date": end_date,
+            "summary":  summary,
         })
 
     if not events:
@@ -63,11 +71,25 @@ def fetch_sailgp():
     events.sort(key=lambda e: e["date"])
     next_event = events[0]
 
-    name  = _clean_name(next_event["summary"])
-    label = next_event["date"].strftime("%-d %b")
+    name = _clean_name(next_event["summary"])
+
+    # race days are Sat and Sun of the event weekend
+    # DTSTART is Friday (practice day), so +1 = Saturday, +2 = Sunday
+    race1_date = next_event["date"] + timedelta(days=1)
+    race2_date = next_event["date"] + timedelta(days=2)
+
+    if today >= race2_date:
+        label    = "Race Day 2"
+        date_str = race2_date.strftime("Sun %-d %b")
+    elif today >= race1_date:
+        label    = "Race Day 2"
+        date_str = race2_date.strftime("Sun %-d %b")
+    else:
+        label    = "Race Day 1"
+        date_str = race1_date.strftime("Sat %-d %b")
 
     return {
-        "label": "Next Event",
+        "label": label,
         "name":  name,
-        "date":  label,
+        "date":  date_str,
     }
