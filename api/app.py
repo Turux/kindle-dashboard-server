@@ -2,7 +2,8 @@
 
 import json
 import os
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, abort, request
+from fetcher.sources.weather import fetch_weather
 
 app = Flask(__name__)
 
@@ -17,6 +18,19 @@ def full_sync():
 
     with open(HOME_CACHE) as f:
         home = json.load(f)
+
+    # if device sends coordinates, fetch fresh weather for that location
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+    if lat and lon:
+        try:
+            home["weather"] = fetch_weather(
+                lat=float(lat),
+                lon=float(lon)
+            )
+        except Exception as e:
+            print(f"  weather override failed: {e}")
+            # fall through to cached weather
 
     # load per-source headlines
     sources = {}
