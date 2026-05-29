@@ -13,12 +13,9 @@ ICS_URL = (
 
 def _clean_name(summary):
     """Extract a short display name from SailGP event summary"""
-    # format 1: "Sponsor Name Sail Grand Prix | Location"
     if "|" in summary:
         location = summary.split("|")[1].strip()
         return f"{location} SGP"
-
-    # format 2: "Sponsor Location Sail Grand Prix"
     if "Sail Grand Prix" in summary:
         before = summary.split("Sail Grand Prix")[0].strip()
         words  = before.split()
@@ -26,8 +23,6 @@ def _clean_name(summary):
             return f"{' '.join(words[-2:])} SGP"
         elif words:
             return f"{words[-1]} SGP"
-
-    # fallback
     return summary[:20]
 
 def fetch_sailgp():
@@ -73,10 +68,10 @@ def fetch_sailgp():
 
     name = _clean_name(next_event["summary"])
 
-    # race days are Sat and Sun of the event weekend
-    # DTSTART is Friday (practice day), so +1 = Saturday, +2 = Sunday
-    race1_date = next_event["date"] + timedelta(days=1)
-    race2_date = next_event["date"] + timedelta(days=2)
+    # DTSTART is always Saturday (Race Day 1)
+    # DTSTART + 1 is Sunday (Race Day 2)
+    race1_date = next_event["date"]
+    race2_date = next_event["date"] + timedelta(days=1)
 
     if today >= race2_date:
         label    = "Race Day 2"
