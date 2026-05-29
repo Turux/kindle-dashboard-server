@@ -1,7 +1,27 @@
 # fetcher/sources/f1.py
 
 import requests
+import json
+import os
 from datetime import datetime, timezone
+
+CACHE_FILE = "/data/cache/f1_last.json"
+
+def _save_last(data):
+    try:
+        with open(CACHE_FILE, "w") as f:
+            json.dump(data, f)
+    except:
+        pass
+
+def _load_last():
+    try:
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE) as f:
+                return json.load(f)
+    except:
+        pass
+    return None
 
 def fetch_f1():
     try:
@@ -11,12 +31,22 @@ def fetch_f1():
         )
 
         if r.status_code == 401:
-            return {
-                "label": "Live now",
-                "event": "F1",
-                "name":  "Session live!",
-                "date":  "Check TV",
-            }
+            # session is live — fall back to last known session
+            last = _load_last()
+            if last:
+                return {
+                    "label": "Live now",
+                    "event": last.get("event", "F1"),
+                    "name":  last.get("name", "Session live"),
+                    "date":  last.get("date", ""),
+                }
+            else:
+                return {
+                    "label": "Live now",
+                    "event": "On air",
+                    "name":  "Session live",
+                    "date":  "Check TV",
+                }
 
         r.raise_for_status()
         sessions = r.json()
@@ -29,7 +59,7 @@ def fetch_f1():
         now    = datetime.now(timezone.utc).isoformat()
         future = [
             s for s in sessions
-            if s.get("date_end", "") > now   # use date_end!
+            if s.get("date_end", "") > now
             and not s.get("is_cancelled", False)
         ]
 
@@ -49,14 +79,22 @@ def fetch_f1():
         except:
             label = s["date_start"][:10]
 
-        return {
+        result = {
             "label": "Next Session",
             "event": f"{location} GP",
             "name":  name,
             "date":  label,
         }
 
+        # save for use during live sessions
+        _save_last(result)
+        return result
+
     except Exception as e:
         print(f"  f1 failed: {e}")
-        return {"label": "Unavailable", "event": "---",
-                "name": "---", "date": "---"}
+        # fall back to last known on any error
+        last = _load_last()
+        return last if last else {
+            "label": "Unavailable", "event": "---",
+            "name": "---", "date": "---"
+        }
