@@ -3,12 +3,12 @@
 import json
 import os
 from flask import Flask, jsonify, abort, request
-from fetcher.sources.weather import fetch_weather
 
 app = Flask(__name__)
 
-DATA_DIR    = "/data/cache"
-HOME_CACHE  = f"{DATA_DIR}/home.json"
+DATA_DIR      = "/data/cache"
+HOME_CACHE    = f"{DATA_DIR}/home.json"
+DEVICE_CONFIG = f"{DATA_DIR}/device_config.json"
 
 @app.route("/api/full-sync")
 def full_sync():
@@ -19,18 +19,15 @@ def full_sync():
     with open(HOME_CACHE) as f:
         home = json.load(f)
 
-    # if device sends coordinates, fetch fresh weather for that location
+    # if device sends coordinates, save for fetcher to use on next run
     lat = request.args.get("lat")
     lon = request.args.get("lon")
     if lat and lon:
         try:
-            home["weather"] = fetch_weather(
-                lat=float(lat),
-                lon=float(lon)
-            )
+            with open(DEVICE_CONFIG, "w") as f:
+                json.dump({"lat": float(lat), "lon": float(lon)}, f)
         except Exception as e:
-            print(f"  weather override failed: {e}")
-            # fall through to cached weather
+            print(f"  failed to save device config: {e}")
 
     # load per-source headlines
     sources = {}
