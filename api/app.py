@@ -39,15 +39,23 @@ def full_sync():
                 with open(f"{sources_dir}/{fname}") as f:
                     sources[source_id] = json.load(f)
 
-    # load pre-cached articles
+    # collect url_hashes referenced by current source headlines
+    referenced = set()
+    for items in sources.values():
+        for item in items:
+            if "url_hash" in item:
+                referenced.add(item["url_hash"])
+
+    # only serve articles that are currently referenced
     articles = {}
     articles_dir = f"{DATA_DIR}/articles"
     if os.path.exists(articles_dir):
         for fname in os.listdir(articles_dir):
             if fname.endswith(".txt"):
                 url_hash = fname[:-4]
-                with open(f"{articles_dir}/{fname}") as f:
-                    articles[url_hash] = f.read()
+                if url_hash in referenced:
+                    with open(f"{articles_dir}/{fname}") as f:
+                        articles[url_hash] = f.read()
 
     return jsonify({
         "home":     home,
