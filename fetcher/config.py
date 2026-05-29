@@ -18,7 +18,7 @@ RSS_SOURCES = {
     "bellingcat": "https://www.bellingcat.com/feed/",
     "the_nerve": "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
     "the_dial":  "https://thedialrss.com/combined-rss/",
-    "ft":         "https://feeds.acast.com/public/shows/ftnewsbriefing",
+    "the_conversation":     "https://theconversation.com/uk/articles.atom",
 }
 
 # ── headlines for home screen ─────────────────────
@@ -35,7 +35,7 @@ SOURCE_DISPLAY_NAMES = {
     "bellingcat": "Bellingcat",
     "the_nerve":  "The Nerve",
     "the_dial":   "The Dial",
-    "ft": "FT Briefing",
+    "the_conversation": "The Conversation",
 }
 
 # ── paths ─────────────────────────────────────────
