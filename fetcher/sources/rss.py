@@ -3,6 +3,7 @@
 import feedparser
 import trafilatura
 import hashlib
+import html
 import os
 import unicodedata
 import re
@@ -28,7 +29,9 @@ def _parse_date(entry):
 def _clean_text(text):
     if not text:
         return text
-    
+
+    text = html.unescape(text)
+
     # strip markdown links [text](url) → text
     text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
 
