@@ -11,6 +11,35 @@ from datetime import datetime, timezone
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR
 from config import RSS_SOURCES, HOME_HEADLINE_SOURCES, ARTICLES_DIR, SOURCE_DISPLAY_NAMES
 
+_CAPTION_RE = re.compile(
+    r'(Photo|Photograph|Image|Picture|Credit|Pic)(\s+by\s+|\s*:\s*)',
+    re.IGNORECASE
+)
+
+def _strip_captions(text):
+    """Remove short paragraphs that look like photo/image captions."""
+    paras = text.split('\n')
+    cleaned = [p for p in paras
+               if not (p.strip() and len(p.strip()) < 200 and _CAPTION_RE.search(p))]
+    return '\n'.join(cleaned)
+
+def _strip_duplicate_intro(text, summary):
+    """Remove first body paragraph if it duplicates the summary."""
+    if not summary or not text:
+        return text
+    s_norm = re.sub(r'\s+', ' ', summary.strip().lower())
+    check_len = min(len(s_norm), 60)
+    if check_len < 15:
+        return text
+    paras = text.split('\n')
+    for i, p in enumerate(paras):
+        if p.strip():
+            p_norm = re.sub(r'\s+', ' ', p.strip().lower())
+            if p_norm.startswith(s_norm[:check_len]):
+                paras.pop(i)
+            break
+    return '\n'.join(paras)
+
 def _url_hash(url):
     return hashlib.md5(url.encode()).hexdigest()[:10]
 
@@ -122,6 +151,8 @@ def fetch_all_rss():
                 if not os.path.exists(article_path):
                     text = _fetch_article(link)
                     if text:
+                        text = _strip_captions(text)
+                        text = _strip_duplicate_intro(text, summary)
                         os.makedirs(ARTICLES_DIR, exist_ok=True)
                         with open(article_path, "w") as f:
                             f.write(text)
