@@ -120,6 +120,8 @@ docker compose logs api -f
 6. **FT fetch rate limiting** — if FT is re-attempted in future, fetch weekdays only.
 
 ## Recently fixed
+- Photo/image caption paragraphs stripped from article text before saving (`_strip_captions()` in rss.py)
+- Duplicate intro paragraph stripped when it matches the RSS summary (`_strip_duplicate_intro()` in rss.py)
 - F1 live session fallback (caches last known session in f1_last.json)
 - SailGP Race Day 1/2 logic (DTSTART = Saturday = Race Day 1)
 - Weather coordinates configurable from device (via ?lat=&lon= params)
