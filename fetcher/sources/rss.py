@@ -138,6 +138,11 @@ def fetch_all_rss():
                 if not title or not link:
                     continue
 
+                # skip podcast/audio entries (e.g. Guardian Long Read audio feed)
+                enclosures = getattr(entry, "enclosures", [])
+                if any(e.get("type", "").startswith("audio/") for e in enclosures):
+                    continue
+
                 # clean summary — strip HTML tags
                 if summary:
                     summary = re.sub(r"<[^>]+>", "", summary).strip()
