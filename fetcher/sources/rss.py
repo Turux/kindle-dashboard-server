@@ -138,11 +138,9 @@ def fetch_all_rss():
                 if not title or not link:
                     continue
 
-                # clean summary — strip HTML tags crudely
+                # clean summary — strip HTML tags
                 if summary:
-                    import re
-                    summary = re.sub(r"<[^>]+>", "", summary)
-                    summary = summary[:200].strip()
+                    summary = re.sub(r"<[^>]+>", "", summary).strip()
 
                 url_hash = _url_hash(link)
 
@@ -156,6 +154,28 @@ def fetch_all_rss():
                         os.makedirs(ARTICLES_DIR, exist_ok=True)
                         with open(article_path, "w") as f:
                             f.write(text)
+
+                # strip body-bleed from summary: some feeds (e.g. Guardian)
+                # concatenate article body text directly onto the standfirst.
+                # find the first 5 words of the body in the summary and trim there.
+                if summary and os.path.exists(article_path):
+                    try:
+                        with open(article_path) as f:
+                            body_start = f.read(300)
+                        body_words = body_start.split()
+                        if len(body_words) >= 5:
+                            needle = " ".join(body_words[:5])
+                            s_norm = re.sub(r"\s+", " ", summary.lower())
+                            n_norm = re.sub(r"\s+", " ", needle.lower())
+                            idx = s_norm.find(n_norm)
+                            if idx > 20:
+                                summary = summary[:idx].rstrip()
+                    except Exception:
+                        pass
+
+                # cap only if unusually long; genuine long summaries are kept
+                if len(summary) > 300:
+                    summary = summary[:200].strip()
 
                 items.append({
                     "title":    _clean_text(title),
