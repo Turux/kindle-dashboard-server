@@ -13,12 +13,15 @@ STOCK_TICKERS = [
 
 # ── rss sources ───────────────────────────────────
 RSS_SOURCES = {
-    "guardian":  "https://www.theguardian.com/uk/rss",
-    "semafor": "https://www.semafor.com/rss.xml",
-    "bellingcat": "https://www.bellingcat.com/feed/",
-    "the_nerve": "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
-    "the_dial":  "https://thedialrss.com/combined-rss/",
+    "guardian":             "https://www.theguardian.com/uk/rss",
+    "semafor":              "https://www.semafor.com/rss.xml",
+    "bellingcat":           "https://www.bellingcat.com/feed/",
+    "the_nerve":            "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
+    "the_dial":             "https://thedialrss.com/combined-rss/",
     "the_conversation":     "https://theconversation.com/uk/articles.atom",
+    "propublica":           "https://www.propublica.org/rss",
+    "404_media":            "https://www.404media.co/rss",
+    "guardian_long_read":   "https://www.theguardian.com/news/series/the-long-read/rss",
 }
 
 # ── headlines for home screen ─────────────────────
@@ -30,12 +33,15 @@ HOME_HEADLINE_SOURCES = {
 }
 
 SOURCE_DISPLAY_NAMES = {
-    "guardian":   "Guardian",
-    "semafor":    "Semafor",
-    "bellingcat": "Bellingcat",
-    "the_nerve":  "The Nerve",
-    "the_dial":   "The Dial",
-    "the_conversation": "The Conversation",
+    "guardian":           "Guardian",
+    "semafor":            "Semafor",
+    "bellingcat":         "Bellingcat",
+    "the_nerve":          "The Nerve",
+    "the_dial":           "The Dial",
+    "the_conversation":   "The Conversation",
+    "propublica":         "ProPublica",
+    "404_media":          "404 Media",
+    "guardian_long_read": "G. Long Read",
 }
 
 # ── paths ─────────────────────────────────────────

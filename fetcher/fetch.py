@@ -25,7 +25,7 @@ def cleanup_articles():
         key=os.path.getmtime,
         reverse=True
     )
-    for f in files[200:]:   # keep 200 on server
+    for f in files[250:]:   # keep 250 on server
         os.remove(f)
 
 def run_fetch():
