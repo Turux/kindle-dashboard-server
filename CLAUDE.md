@@ -43,16 +43,19 @@ The `lat`/`lon` params are optional. When provided, the API saves them to `/data
 ## RSS sources (config.py)
 ```python
 RSS_SOURCES = {
-    "guardian":         "https://www.theguardian.com/uk/rss",
-    "semafor":          "https://www.semafor.com/rss.xml",
-    "bellingcat":       "https://www.bellingcat.com/feed/",
-    "the_nerve":        "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
-    "the_dial":         "https://thedialrss.com/combined-rss/",
-    "the_conversation": "https://theconversation.com/uk/articles.atom",
+    "guardian":             "https://www.theguardian.com/uk/rss",
+    "semafor":              "https://www.semafor.com/rss.xml",
+    "bellingcat":           "https://www.bellingcat.com/feed/",
+    "the_nerve":            "https://rss.beehiiv.com/feeds/30tXEwEwRx.xml",
+    "the_dial":             "https://thedialrss.com/combined-rss/",
+    "the_conversation":     "https://theconversation.com/uk/articles.atom",
+    "propublica":           "https://www.propublica.org/rss",
+    "404_media":            "https://www.404media.co/rss",
+    "guardian_long_read":   "https://www.theguardian.com/news/series/the-long-read/rss",
 }
 ```
 
-FT was previously attempted via podcast RSS (acast) — access token URLs in show notes are blocked by Cloudflare bot detection server-side. Not currently implemented.
+Guardian Long Read shares url_hash with any overlap in the main Guardian feed — article text is never stored twice. Podcast/audio entries are filtered out via enclosure type check. FT was previously attempted via podcast RSS (acast) — access token URLs in show notes are blocked by Cloudflare bot detection server-side. Not currently implemented.
 
 ## Cache structure
 ```
@@ -68,8 +71,8 @@ FT was previously attempted via podcast RSS (acast) — access token URLs in sho
 ```
 
 Article cache policy:
-- Server keeps max 150 articles, deletes oldest beyond that
-- Kindle keeps max 100 articles for 7 days
+- Server keeps max 250 articles, deletes oldest beyond that
+- Kindle keeps max 120 articles for 7 days
 - Kindle never overwrites existing articles on sync (add only)
 
 ## Text cleaning (_clean_text in rss.py)
@@ -85,8 +88,9 @@ Applied to all article text and summaries:
 ```python
 WEATHER_LAT = 52.61457      # fallback if device doesn't send coords
 WEATHER_LON = -1.1239
+LOCAL_TIMEZONE = "Europe/London"  # used for F1 session time conversion (zoneinfo)
 STOCK_TICKERS = [...]       # Yahoo Finance format
-RSS_SOURCES = {...}
+RSS_SOURCES = {...}         # 9 sources — see above
 HOME_HEADLINE_SOURCES = {   # which sources + how many for home screen
     "guardian": 2,
     "semafor": 1,
@@ -120,11 +124,16 @@ docker compose logs api -f
 6. **FT fetch rate limiting** — if FT is re-attempted in future, fetch weekdays only.
 
 ## Recently fixed
-- Photo/image caption paragraphs stripped from article text before saving (`_strip_captions()` in rss.py)
+- Photo/image caption paragraphs stripped from article text (`_strip_captions()` in rss.py)
 - Duplicate intro paragraph stripped when it matches the RSS summary (`_strip_duplicate_intro()` in rss.py)
+- Guardian summary body-bleed: RSS standfirst has body text concatenated onto it; server now finds first 5 body words in summary and trims from there (`_strip_body_bleed()` in rss.py)
+- Title and publication date stripped if trafilatura pulls them into article body (`_strip_title_from_body()` in rss.py)
+- Podcast/audio entries filtered out by enclosure type before processing (catches Guardian Long Read audio episodes)
+- F1 session times converted from UTC to local timezone via `LOCAL_TIMEZONE` in config.py (zoneinfo, handles BST/GMT automatically)
+- SailGP stale event: DTEND is exclusive in iCalendar — changed `<` to `<=` so event is filtered on the day after it ends
 - F1 live session fallback (caches last known session in f1_last.json)
 - SailGP Race Day 1/2 logic (DTSTART = Saturday = Race Day 1)
 - Weather coordinates configurable from device (via ?lat=&lon= params)
-- Article cleanup limit increased to 150 (was 50, caused articles to be deleted)
+- Article cleanup limit increased to 250 (was 150)
 - Text cleaning preserves newlines (was corrupting paragraph structure)
 - HTML entities stripped from article text
