@@ -4,6 +4,8 @@ import requests
 import json
 import os
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+from config import LOCAL_TIMEZONE
 
 CACHE_FILE = "/data/cache/f1_last.json"
 
@@ -74,7 +76,7 @@ def fetch_f1():
         name     = s.get("session_name", "---")
 
         try:
-            dt    = datetime.fromisoformat(s["date_start"])
+            dt    = datetime.fromisoformat(s["date_start"]).astimezone(ZoneInfo(LOCAL_TIMEZONE))
             label = dt.strftime("%-d %b %H:%M")
         except:
             label = s["date_start"][:10]

@@ -3,6 +3,7 @@
 # ── location ──────────────────────────────────────
 WEATHER_LAT  = 51.5074   # London — update to your actual location
 WEATHER_LON  = -0.1278
+LOCAL_TIMEZONE = "Europe/London"
 
 # ── stocks ────────────────────────────────────────
 STOCK_TICKERS = [
