@@ -49,8 +49,8 @@ def fetch_sailgp():
         else:
             end_date = dtend
 
-        # include events that haven't fully ended yet
-        if end_date < today:
+        # include events that haven't fully ended yet (DTEND is exclusive)
+        if end_date <= today:
             continue
 
         summary = str(component.get("SUMMARY", ""))
