@@ -23,6 +23,35 @@ def _strip_captions(text):
                if not (p.strip() and len(p.strip()) < 200 and _CAPTION_RE.search(p))]
     return '\n'.join(cleaned)
 
+_DATE_LINE_RE = re.compile(
+    r'^\s*(\d{1,2}\s+\w+\s+\d{4}|\w+\s+\d{1,2},?\s+\d{4}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})\s*$',
+    re.IGNORECASE
+)
+
+def _strip_title_from_body(text, title):
+    """Remove title and publication date if trafilatura pulled them into the body."""
+    if not title or not text:
+        return text
+    t_norm = re.sub(r'\s+', ' ', title.strip().lower())
+    check_len = min(len(t_norm), 60)
+    if check_len < 10:
+        return text
+    paras = text.split('\n')
+    i = 0
+    while i < len(paras) and not paras[i].strip():
+        i += 1
+    if i >= len(paras):
+        return text
+    p_norm = re.sub(r'\s+', ' ', paras[i].strip().lower())
+    if p_norm.startswith(t_norm[:check_len]) or t_norm.startswith(p_norm[:check_len]):
+        paras.pop(i)
+        # also strip the next line if it looks like a standalone date
+        while i < len(paras) and not paras[i].strip():
+            i += 1
+        if i < len(paras) and len(paras[i].strip()) < 40 and _DATE_LINE_RE.match(paras[i]):
+            paras.pop(i)
+    return '\n'.join(paras)
+
 def _strip_duplicate_intro(text, summary):
     """Remove first body paragraph if it duplicates the summary."""
     if not summary or not text:
@@ -156,6 +185,7 @@ def fetch_all_rss():
                     if text:
                         text = _strip_captions(text)
                         text = _strip_duplicate_intro(text, summary)
+                        text = _strip_title_from_body(text, title)
                         os.makedirs(ARTICLES_DIR, exist_ok=True)
                         with open(article_path, "w") as f:
                             f.write(text)
